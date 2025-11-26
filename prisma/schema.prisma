@@ -1,0 +1,85 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Modelo para las plataformas de streaming (Netflix, Spotify, etc.)
+model Cuenta {
+  id          String   @id @default(cuid())
+  plataforma  String   // Ej: "Netflix", "Spotify", "Disney+"
+  email       String
+  password    String
+  perfil      String?  // Perfil específico si aplica
+  maxPerfiles Int      @default(1) // Cuántos perfiles/clientes pueden usar esta cuenta
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relación con suscripciones
+  suscripciones Suscripcion[]
+
+  @@map("cuentas")
+}
+
+// Modelo para los clientes
+model Cliente {
+  id        String   @id @default(cuid())
+  nombre    String
+  email     String?
+  telefono  String?
+  notas     String?  // Notas adicionales sobre el cliente
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relación con suscripciones
+  suscripciones Suscripcion[]
+
+  @@map("clientes")
+}
+
+// Modelo para las suscripciones (relación entre cliente y cuenta)
+model Suscripcion {
+  id            String    @id @default(cuid())
+  clienteId     String
+  cuentaId      String
+  fechaInicio   DateTime  @default(now())
+  fechaFin      DateTime
+  precio        Float
+  estado        String    @default("activa") // activa, vencida, cancelada
+  renovacion    Boolean   @default(true) // Si se renueva automáticamente
+  observaciones String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relaciones
+  cliente Cliente @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  cuenta  Cuenta  @relation(fields: [cuentaId], references: [id], onDelete: Cascade)
+
+  // Historial de pagos
+  pagos Pago[]
+
+  @@map("suscripciones")
+}
+
+// Modelo para el historial de pagos
+model Pago {
+  id             String      @id @default(cuid())
+  suscripcionId  String
+  monto          Float
+  fechaPago      DateTime    @default(now())
+  metodoPago     String?     // Efectivo, transferencia, etc.
+  comprobante    String?     // URL o referencia del comprobante
+  notas          String?
+  createdAt      DateTime    @default(now())
+
+  // Relación
+  suscripcion Suscripcion @relation(fields: [suscripcionId], references: [id], onDelete: Cascade)
+
+  @@map("pagos")
+}
