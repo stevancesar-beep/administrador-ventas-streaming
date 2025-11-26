@@ -4,11 +4,12 @@ import { prisma } from '@/lib/prisma';
 // GET /api/cuentas/[id] - Obtener una cuenta específica
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const cuenta = await prisma.cuenta.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         suscripciones: {
           include: {
@@ -38,14 +39,15 @@ export async function GET(
 // PUT /api/cuentas/[id] - Actualizar una cuenta
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await request.json();
     const { plataforma, email, password, perfil, maxPerfiles } = body;
 
     const cuenta = await prisma.cuenta.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         plataforma,
         email,
@@ -68,11 +70,12 @@ export async function PUT(
 // DELETE /api/cuentas/[id] - Eliminar una cuenta
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     await prisma.cuenta.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({ message: 'Cuenta eliminada exitosamente' });

@@ -4,11 +4,12 @@ import { prisma } from '@/lib/prisma';
 // GET /api/suscripciones/[id] - Obtener una suscripción específica
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const suscripcion = await prisma.suscripcion.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         cliente: true,
         cuenta: true,
@@ -40,9 +41,10 @@ export async function GET(
 // PUT /api/suscripciones/[id] - Actualizar una suscripción
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await request.json();
     const {
       clienteId,
@@ -56,7 +58,7 @@ export async function PUT(
     } = body;
 
     const suscripcion = await prisma.suscripcion.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         clienteId,
         cuentaId,
@@ -86,11 +88,12 @@ export async function PUT(
 // DELETE /api/suscripciones/[id] - Eliminar una suscripción
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     await prisma.suscripcion.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({ message: 'Suscripción eliminada exitosamente' });
